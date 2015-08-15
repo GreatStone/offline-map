@@ -42,8 +42,18 @@ void BitNum::flip() {
     }
 }
 
-inline bool BitNum::test(int index) {
+inline bool BitNum::test(int index) const {
     return _data[index / 32] & _ones[index % 32];
+}
+
+bool BitNum::empty() const {
+    int sz = get_grp_sz();
+    for (int i = 0; i < sz; ++i) {
+	if (_data[i]) {
+	    return false;
+	}
+    }
+    return true;
 }
 
 BitNum BitNum::operator & (const BitNum & x) const {
@@ -96,7 +106,3 @@ bool BitNum::operator < (const BitNum & x) const {
 
 }
 
-
-int main () {
-    return 0;
-}

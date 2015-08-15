@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-namespace utils{
+namespace utils {
 
 typedef uint32_t unit;
 
@@ -32,7 +32,8 @@ public:
     void set();
     void flip(int index);
     void flip();
-    bool test(int index);
+    bool test(int index) const;
+    bool empty() const;
 
     BitNum operator & (const BitNum & x) const;
     BitNum operator | (const BitNum & x) const;
