@@ -33,6 +33,12 @@ public:
     void insert(const std::string & src);
     TrieNode* get_root();
     TrieNode* get_node_by_id(int id);
+    int get_size() {
+	return _node_by_id.size();
+    }
+    RevertTrie* get_revert_trie() {
+	return &_revert_trie;
+    }
     bool is_end(int id);
 private:
     TrieNode* _root;

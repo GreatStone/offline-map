@@ -15,6 +15,10 @@ Trie::~Trie() {
     }
 }
 
+bool Trie::is_end(int id) {
+    return _is_end[id];
+}
+    
 TrieNode* Trie::add_new_node(char c) {
     TrieNode* ret = new TrieNode;
     ret->c = c;
@@ -70,11 +74,11 @@ RevertTrie::~RevertTrie() {
     }
 }
 
-inline TrieNode* RevertTrie::get_root() {
+TrieNode* RevertTrie::get_root() {
     return _node_by_id[0];
 }
 
-inline TrieNode* RevertTrie::get_node_by_id(int id) {
+TrieNode* RevertTrie::get_node_by_id(int id) {
     return _node_by_id[id];
 }
     
