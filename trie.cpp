@@ -55,11 +55,13 @@ void Trie::insert(const std::string & src) {
 	    TrieNode* temp = add_new_node(input[i]);
 	    _revert_trie.add_new_node(cur->id, input[i]);
 	    cur->childs.push_back(temp);
+            cur = temp;
 	} else {
 	    cur = find;
 	}
     }
     ++(cur->lang_sz);
+    _is_end[cur->id] = true;
 }
 
 RevertTrie::RevertTrie() {

@@ -3,14 +3,15 @@
 
 #include <queue>
 #include <set>
+#include <list>
 
-#include "bit_num.h"
 #include "trie.h"
+#include "partition.h"
 
 namespace dfa_compress{
 
 const int MAX_BUFFER_SIZE = 2048;
-    
+
 int build_tree(::utils::Trie& trie, FILE* in) {
     char buffer[MAX_BUFFER_SIZE];
     while (fgets(buffer,MAX_BUFFER_SIZE,in)) {
@@ -22,86 +23,56 @@ int build_tree(::utils::Trie& trie, FILE* in) {
 		return -1;
 	    }
 	}
+        else {
+            buffer[len-1] = 0;
+        }
 	trie.insert(std::string(buffer));
     }
     return 0;
 }
 
-std::queue<utils::BitNum>* dfa_compress (::utils::Trie& orig) {
-    int size = orig.get_size();
-    utils::BitNum all(size);
-    utils::BitNum terminal(size);
-    all.set();
-    for (int i = 0; i < size; ++i) {
+utils::Partition* dfa_compress (utils::Trie& orig) {
+    utils::Partition* result = new utils::Partition(orig.get_size());
+    utils::WaitSet waiting;
+    result->begin()->nxt->wait = waiting.push_part(result->begin()->nxt);
+
+    std::list<int> terminal;
+    for (int i = 0; i < orig.get_size(); ++i) {
 	if (orig.is_end(i)) {
-	    terminal.set(i);
+	    terminal.push_back(i);
 	}
     }
     
-    std::queue< ::utils::BitNum >* result = new std::queue< ::utils::BitNum >;
-    std::set< ::utils::BitNum > waiting;
+    result->refine(terminal, waiting);
 
-    result->push(all);
-    waiting.insert(all);
+    utils::RevertTrie* revert_trie = orig.get_revert_trie();
 
-    result->push(terminal);
-    waiting.insert(terminal);
+    std::list<int> all_revert[256];
+    while (waiting.begin()->nxt != waiting.end()) {
+        struct utils::WaitNode* waited = waiting.end()->pre;
+        waiting.remove_node(waited);
+        waited->orig->wait = NULL;
+        struct utils::PartNode* cur = waited->orig;
 
-    ::utils::RevertTrie* revert_trie = orig.get_revert_trie();
-    
-    while (!waiting.empty()) {
-	::utils::BitNum cur = *(waiting.begin());
-	waiting.erase(waiting.begin());
-	for (char c = 0; c < 128; ++c) {
-	    
-	    ::utils::BitNum revert(size);
-	    ::utils::SetIterator iterator(cur);
-	    int temp;
-	    while ((temp = iterator.next()) != -1) {
-		::utils::TrieNode* e = revert_trie->get_node_by_id(temp);
-		std::vector< ::utils::TrieNode* >& cur_childs = e->childs;
-		for (int i = 0; i < cur_childs.size(); ++i) {
-		    if (cur_childs[i]->c == c) {
-			revert.set(i);
-		    }
-		}
-	    }
+        for (int i = 0; i < 256; ++i) {
+            all_revert[i].clear();
+        }
+        for (int it = cur->begin; ; it = result->get_nxt(it)) {
+            utils::TrieNode* revert_node = revert_trie->get_node_by_id(it);
+            if (revert_node->childs.size()) {
+                all_revert[static_cast<unsigned char>(revert_node->c)].push_back(revert_node->childs[0]->id);
+            }
+            if (it == cur->end) {
+                break;
+            }
+        }
 
-	    std::queue< ::utils::BitNum > set_buffer;
-	    
-	    while (!result->empty()) {
-		::utils::BitNum e = result->front();
-		result->pop();
-
-		utils::BitNum inter = revert & e;
-		utils::BitNum except = e - revert;
-		if (inter.empty() || except.empty()) {
-		    set_buffer.push(e);
-		    continue;
-		}
-
-		set_buffer.push(inter);
-		set_buffer.push(except);
-
-		std::set< ::utils::BitNum >::iterator wait_it;
-		wait_it = waiting.find(e);
-		if (wait_it == waiting.end()) {
-		    if (inter.get_count() < except.get_count()) {
-			waiting.insert(inter);
-		    } else {
-			waiting.insert(except);
-		    }
-		} else {
-		    waiting.erase(wait_it);
-		    waiting.insert(inter);
-		    waiting.insert(except);
-		}
-	    }
-	    while (!set_buffer.empty()) {
-		result->push(set_buffer.front());
-		set_buffer.pop();
-	    }
-	}
+        for (int i = 0; i < 256; ++i) {
+            if (all_revert[i].empty()) {
+                continue;
+            }
+            result->refine(all_revert[i], waiting);
+        }
     }
     return result;
 }
@@ -120,8 +91,20 @@ int main(int argc, char** argv) {
 	return -1;
     }
     printf("Trie has %d nodes\n", trie.get_size());
-    std::queue< ::utils::BitNum >* result = dfa_compress::dfa_compress(trie);
-    printf("%d nodes in DFA.\n", result->size());
+    utils::Partition* result = dfa_compress::dfa_compress(trie);
+    int count = 0;
+    for (struct utils::PartNode* cur = result->begin()->nxt; cur != result->end(); cur = cur->nxt) {
+        /*int cnt = 0;
+	for (int it = cur->data.begin; ; it = result->get_nxt(it)) {
+            cnt++;
+            printf("%d ", it);
+            if (it == cur->data.end)
+                break;
+        }
+        printf(" %%  %d\n", cnt);*/
+        count ++;
+    }
+    printf("%d nodes in DFA.\n", count);
     fclose(in);
     return 0;
 }

@@ -22,10 +22,13 @@ public:
     TrieNode* get_root();
     TrieNode* get_node_by_id(int id);
     TrieNode* add_new_node(int fth, char c);
+    int get_size() {
+        return _node_by_id.size();
+    }
 private:
     std::vector<TrieNode*> _node_by_id;
 };
- 
+
 class Trie {
 public:
     Trie();
