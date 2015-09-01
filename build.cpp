@@ -50,8 +50,8 @@ utils::Partition* dfa_compress (utils::Trie& orig) {
         struct utils::WaitNode* waited = waiting.end()->pre;
         waiting.remove_node(waited);
         waited->orig->wait = NULL;
-        delete waited;
         struct utils::PartNode* cur = waited->orig;
+	delete waited;
 
         for (int i = 0; i < 256; ++i) {
             all_revert[i].clear();
@@ -93,6 +93,7 @@ int main(int argc, char** argv) {
 	return -1;
     }
     printf("Trie has %d nodes\n", trie.get_size());
+
     utils::Partition* result = dfa_compress::dfa_compress(trie);
     
     int count = 0;
@@ -108,6 +109,7 @@ int main(int argc, char** argv) {
         count ++;
     }
     printf("%d nodes in DFA.\n", count);
+    delete result;
     fclose(in);
     return 0;
 }

@@ -42,6 +42,7 @@ struct InterNode {
 class WaitSet {
 public:
     WaitSet();
+    ~WaitSet();
     struct WaitNode* push_part(struct PartNode* part);
     void remove_node(struct WaitNode* aim);
     inline struct WaitNode* begin() {
@@ -58,6 +59,7 @@ private:
 class Partition {
 public:
     Partition(int size);
+    ~Partition();
     inline struct PartNode* begin() {
         return _begin;
     }

@@ -69,6 +69,16 @@ WaitSet::WaitSet() {
     _end->pre = _begin;
 }
 
+WaitSet::~WaitSet() {
+    WaitNode* tmp;
+    for (WaitNode* cur = _begin; cur != _end; ) {
+	tmp = cur;
+	cur = cur->nxt;
+	delete tmp;
+    }
+    delete _end;
+}
+
 struct WaitNode* WaitSet::push_part(struct PartNode* part) {
     struct WaitNode* ret = new_wait_node();
 
@@ -117,6 +127,18 @@ Partition::Partition(int size) : _size(size){
         _eles[i].nxt = i + 1;
         _eles[i].own = first;
     }
+}
+
+Partition::~Partition() {
+    delete[] &(_eles[-1]);
+    
+    PartNode* tmp;
+    for (PartNode* cur = _begin; cur != _end; ) {
+	tmp = cur;
+	cur = cur->nxt;
+	delete tmp;
+    }
+    delete _end;
 }
 
 void Partition::remove_part(struct PartNode * aim) {
@@ -211,8 +233,8 @@ void Partition::refine(const std::list<int> & pivot, WaitSet & wait) {
             } else {
                 (*inter_it)->orig->wait = wait.push_part((*inter_it)->orig);
             }
+	    (*inter_it)->orig->inter = NULL;
         }
-        (*inter_it)->orig->inter = NULL;
         delete *inter_it;
     }/*
     printf("after refine ");
