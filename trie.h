@@ -13,41 +13,30 @@ typedef struct TrieNode {
     char c;
     int id;
     int lang_sz;
+    int fth;
 } TrieNode;
-
-class RevertTrie {
-public:
-    RevertTrie();
-    ~RevertTrie();
-    TrieNode* get_root();
-    TrieNode* get_node_by_id(int id);
-    TrieNode* add_new_node(int fth, char c);
-    int get_size() {
-        return _node_by_id.size();
-    }
-private:
-    std::vector<TrieNode*> _node_by_id;
-};
 
 class Trie {
 public:
     Trie();
     ~Trie();
     void insert(const std::string & src);
-    TrieNode* get_root();
-    TrieNode* get_node_by_id(int id);
+    inline TrieNode* get_root() {
+        return _node_by_id[0];
+    }
+    inline TrieNode* get_node_by_id(int id) {
+        return _node_by_id[id];
+    }
     int get_size() {
 	return _node_by_id.size();
     }
-    RevertTrie* get_revert_trie() {
-	return &_revert_trie;
+    inline bool is_end(int id) {
+        return _is_end[id];
     }
-    bool is_end(int id);
 private:
     TrieNode* _root;
     std::vector<TrieNode*> _node_by_id;
     std::vector<bool> _is_end;
-    RevertTrie _revert_trie;
     TrieNode* add_new_node(char c);
 };
 

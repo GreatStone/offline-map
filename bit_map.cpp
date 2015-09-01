@@ -98,11 +98,11 @@ void BitMap::flip() {
     }
 }
 
-bool BitMap::test(int id) {
+bool BitMap::test(int id) const{
     return data[id >> 6] & (1ull << ~(id & 0x3f));
 }
 
-int BitMap::lower_count(int range) {
+int BitMap::lower_count(int range) const{
     int ret = 0;
     int grpsz = range >> 6;
     int mod = range & 0x3f;

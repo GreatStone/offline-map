@@ -7,16 +7,13 @@ namespace utils {
 
 Trie::Trie() {
     _root = add_new_node(static_cast<char>(-1));
+    _root->fth = -1;
 }
 
 Trie::~Trie() {
     for (size_t i = 0; i < _node_by_id.size(); ++i) {
 	delete _node_by_id[i];
     }
-}
-
-bool Trie::is_end(int id) {
-    return _is_end[id];
 }
     
 TrieNode* Trie::add_new_node(char c) {
@@ -27,14 +24,6 @@ TrieNode* Trie::add_new_node(char c) {
     _node_by_id.push_back(ret);
     _is_end.push_back(false);
     return ret;
-}
-
-inline TrieNode* Trie::get_root() {
-    return _node_by_id[0];
-}
-
-inline TrieNode* Trie::get_node_by_id(int id) {
-    return _node_by_id[id];
 }
     
 void Trie::insert(const std::string & src) {
@@ -53,8 +42,8 @@ void Trie::insert(const std::string & src) {
 	}
 	if (find == NULL) {
 	    TrieNode* temp = add_new_node(input[i]);
-	    _revert_trie.add_new_node(cur->id, input[i]);
 	    cur->childs.push_back(temp);
+            temp->fth = cur->id;
             cur = temp;
 	} else {
 	    cur = find;
@@ -62,35 +51,6 @@ void Trie::insert(const std::string & src) {
     }
     ++(cur->lang_sz);
     _is_end[cur->id] = true;
-}
-
-RevertTrie::RevertTrie() {
-    TrieNode* root = new TrieNode;
-    root->id = 0;
-    _node_by_id.push_back(root);
-}
-
-RevertTrie::~RevertTrie() {
-    for (size_t i = 0; i < _node_by_id.size(); ++i) {
-	delete _node_by_id[i];
-    }
-}
-
-TrieNode* RevertTrie::get_root() {
-    return _node_by_id[0];
-}
-
-TrieNode* RevertTrie::get_node_by_id(int id) {
-    return _node_by_id[id];
-}
-    
-TrieNode* RevertTrie::add_new_node(int fth, char c) {
-    TrieNode* ret = new TrieNode;
-    ret->c = c;
-    ret->id = _node_by_id.size();
-    _node_by_id.push_back(ret);
-    ret->childs.push_back(_node_by_id[fth]);
-    return ret;
 }
 
 }

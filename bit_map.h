@@ -27,9 +27,9 @@ public:
     void set();
     void reset();
     void flip();
-    bool test(int id);
+    bool test(int id) const;
 
-    int lower_count(int range);
+    int lower_count(int range) const;
 private:
     bits data[4];
 };

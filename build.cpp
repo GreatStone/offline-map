@@ -45,22 +45,24 @@ utils::Partition* dfa_compress (utils::Trie& orig) {
     
     result->refine(terminal, waiting);
 
-    utils::RevertTrie* revert_trie = orig.get_revert_trie();
-
     std::list<int> all_revert[256];
     while (waiting.begin()->nxt != waiting.end()) {
         struct utils::WaitNode* waited = waiting.end()->pre;
         waiting.remove_node(waited);
         waited->orig->wait = NULL;
+        delete waited;
         struct utils::PartNode* cur = waited->orig;
 
         for (int i = 0; i < 256; ++i) {
             all_revert[i].clear();
         }
         for (int it = cur->begin; ; it = result->get_nxt(it)) {
-            utils::TrieNode* revert_node = revert_trie->get_node_by_id(it);
-            if (revert_node->childs.size()) {
-                all_revert[static_cast<unsigned char>(revert_node->c)].push_back(revert_node->childs[0]->id);
+            int fth = orig.get_node_by_id(it)->fth;
+            if (fth != -1) {
+                utils::TrieNode* revert_node = orig.get_node_by_id(fth);
+                if (revert_node->childs.size()) {
+                    all_revert[static_cast<unsigned char>(orig.get_node_by_id(it)->c)].push_back(fth);
+                }
             }
             if (it == cur->end) {
                 break;
@@ -92,6 +94,7 @@ int main(int argc, char** argv) {
     }
     printf("Trie has %d nodes\n", trie.get_size());
     utils::Partition* result = dfa_compress::dfa_compress(trie);
+    
     int count = 0;
     for (struct utils::PartNode* cur = result->begin()->nxt; cur != result->end(); cur = cur->nxt) {
         /*int cnt = 0;
